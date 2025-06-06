@@ -3,71 +3,91 @@
 document.addEventListener('DOMContentLoaded', () => {
     console.log('Altar is ready.');
 
+    // Get DOM elements for settings
+    const solanaRpcUrlInput = document.getElementById('solana-rpc-url');
+    const baseRpcUrlInput = document.getElementById('base-rpc-url');
+    const walletAddressInput = document.getElementById('wallet-address');
+    const updateSettingsButton = document.getElementById('update-settings-button');
+    const totalBurnedElem = document.getElementById('total-burned');
+    const lastTxIdElem = document.getElementById('last-tx-id');
+
     // Function to fetch burn stats from simulated RPC endpoints
     async function fetchBurnStats() {
-        console.log('Fetching burn stats...');
-        const solanaRpcUrl = 'https://api.mainnet-beta.solana.com'; // Example, not actually called
-        const baseRpcUrl = 'https://mainnet.base.org'; // Example, not actually called
+        // Read current values from input fields
+        const solanaRpcUrl = solanaRpcUrlInput ? solanaRpcUrlInput.value : '';
+        const baseRpcUrl = baseRpcUrlInput ? baseRpcUrlInput.value : '';
+        const walletAddress = walletAddressInput ? walletAddressInput.value : '';
 
-        // Simulate API call to Solana
+        if (!solanaRpcUrlInput || !baseRpcUrlInput || !walletAddressInput || !totalBurnedElem || !lastTxIdElem) {
+            console.error('One or more required DOM elements are missing for fetching stats.');
+            if (totalBurnedElem) totalBurnedElem.textContent = 'Configuration error.';
+            if (lastTxIdElem) lastTxIdElem.textContent = 'N/A';
+            return;
+        }
+        
+        console.log(`Fetching burn stats for wallet: ${walletAddress}`);
+        console.log(`Using Solana RPC: ${solanaRpcUrl}`);
+        console.log(`Using Base RPC: ${baseRpcUrl}`);
+
+        totalBurnedElem.textContent = 'Loading...';
+        lastTxIdElem.textContent = 'Loading...';
+
+        // Simulate API call to Solana (using placeholder URLs for now)
         const fetchSolanaData = new Promise((resolve, reject) => {
             setTimeout(() => {
-                // Simulate a successful response or an error
-                if (Math.random() > 0.1) {
-                    // 90% success rate
+                if (Math.random() > 0.1) { // 90% success rate
                     resolve({
-                        totalBurnedOnSolana:
-                            Math.floor(Math.random() * 500000) + 700000,
-                        lastTxIdSolana:
-                            '0xsol' + Math.random().toString(16).slice(2, 12),
+                        totalBurnedOnSolana: Math.floor(Math.random() * 500000) + 700000,
+                        lastTxIdSolana: `0xsol${Math.random().toString(16).slice(2, 12)}`,
                     });
                 } else {
-                    reject(new Error('Failed to fetch data from Solana RPC'));
+                    reject(new Error('Simulated failure fetching data from Solana RPC'));
                 }
             }, 800);
         });
 
-        // Simulate API call to Base
+        // Simulate API call to Base (using placeholder URLs for now)
         const fetchBaseData = new Promise((resolve, reject) => {
             setTimeout(() => {
-                // Simulate a successful response or an error
-                if (Math.random() > 0.1) {
-                    // 90% success rate
+                if (Math.random() > 0.1) { // 90% success rate
                     resolve({
-                        totalBurnedOnBase:
-                            Math.floor(Math.random() * 300000) + 200000,
-                        lastTxIdBase:
-                            '0xbase' + Math.random().toString(16).slice(2, 12),
+                        totalBurnedOnBase: Math.floor(Math.random() * 300000) + 200000,
+                        lastTxIdBase: `0xbase${Math.random().toString(16).slice(2, 12)}`,
                     });
                 } else {
-                    reject(new Error('Failed to fetch data from Base RPC'));
+                    reject(new Error('Simulated failure fetching data from Base RPC'));
                 }
             }, 1200);
         });
 
         try {
-            const [solanaData, baseData] = await Promise.all([
-                fetchSolanaData,
-                fetchBaseData,
-            ]);
+            // For now, we are not actually using solanaRpcUrl, baseRpcUrl, or walletAddress
+            // in the *simulated* calls. They would be used in actual fetch() calls.
+            const [solanaData, baseData] = await Promise.all([fetchSolanaData, fetchBaseData]);
 
-            const totalBurned =
-                solanaData.totalBurnedOnSolana + baseData.totalBurnedOnBase;
-            // For simplicity, we'll just show the Solana TX ID as the 'last' one.
-            // A real implementation might want to show both or the latest of the two.
-            const lastTxId = solanaData.lastTxIdSolana;
+            const totalBurned = solanaData.totalBurnedOnSolana + baseData.totalBurnedOnBase;
+            const lastTxId = solanaData.lastTxIdSolana; // Simplification
 
-            document.getElementById('total-burned').textContent =
-                `${totalBurned.toLocaleString()} Tokens Burned (Solana + Base)`;
-            document.getElementById('last-tx-id').textContent = lastTxId;
+            totalBurnedElem.textContent = `${totalBurned.toLocaleString()} Tokens Burned (Solana + Base)`;
+            lastTxIdElem.textContent = lastTxId;
             console.log('Burn stats updated:', { totalBurned, lastTxId });
         } catch (error) {
             console.error('Error fetching burn stats:', error.message);
-            document.getElementById('total-burned').textContent =
-                'Error loading stats.';
-            document.getElementById('last-tx-id').textContent = 'N/A';
+            totalBurnedElem.textContent = 'Error loading stats.';
+            lastTxIdElem.textContent = 'N/A';
         }
     }
+
+    // Event listener for the button
+    if (updateSettingsButton) {
+        updateSettingsButton.addEventListener('click', fetchBurnStats);
+    } else {
+        console.error('Update settings button not found.');
+    }
+
+    // Initial fetch and periodic update
+    fetchBurnStats(); // Initial call
+    setInterval(fetchBurnStats, 30000); // Periodic update
 
     // Placeholder for rendering the fire on canvas
     function renderFire() {
@@ -144,8 +164,5 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log('Enhanced fire animation started.');
     }
 
-    fetchBurnStats();
-    // Periodically update stats every 30 seconds
-    setInterval(fetchBurnStats, 30000);
     renderFire();
 });
