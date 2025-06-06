@@ -3,14 +3,59 @@
 document.addEventListener('DOMContentLoaded', () => {
     console.log("Altar is ready.");
 
-    // Placeholder for fetching burn totals and last TX-ID
-    function fetchBurnStats() {
-        // Simulate fetching data
-        setTimeout(() => {
-            document.getElementById('total-burned').textContent = "1,234,567 Tokens Burned";
-            document.getElementById('last-tx-id').textContent = "0xabc123def456ghi789";
-            console.log("Burn stats updated.");
-        }, 1000);
+    // Function to fetch burn stats from simulated RPC endpoints
+    async function fetchBurnStats() {
+        console.log("Fetching burn stats...");
+        const solanaRpcUrl = 'https://api.mainnet-beta.solana.com'; // Example, not actually called
+        const baseRpcUrl = 'https://mainnet.base.org'; // Example, not actually called
+
+        // Simulate API call to Solana
+        const fetchSolanaData = new Promise((resolve, reject) => {
+            setTimeout(() => {
+                // Simulate a successful response or an error
+                if (Math.random() > 0.1) { // 90% success rate
+                    resolve({
+                        totalBurnedOnSolana: Math.floor(Math.random() * 500000) + 700000,
+                        lastTxIdSolana: '0xsol' + Math.random().toString(16).slice(2, 12)
+                    });
+                } else {
+                    reject(new Error("Failed to fetch data from Solana RPC"));
+                }
+            }, 800);
+        });
+
+        // Simulate API call to Base
+        const fetchBaseData = new Promise((resolve, reject) => {
+            setTimeout(() => {
+                // Simulate a successful response or an error
+                if (Math.random() > 0.1) { // 90% success rate
+                    resolve({
+                        totalBurnedOnBase: Math.floor(Math.random() * 300000) + 200000,
+                        lastTxIdBase: '0xbase' + Math.random().toString(16).slice(2, 12)
+                    });
+                } else {
+                    reject(new Error("Failed to fetch data from Base RPC"));
+                }
+            }, 1200);
+        });
+
+        try {
+            const [solanaData, baseData] = await Promise.all([fetchSolanaData, fetchBaseData]);
+
+            const totalBurned = solanaData.totalBurnedOnSolana + baseData.totalBurnedOnBase;
+            // For simplicity, we'll just show the Solana TX ID as the 'last' one.
+            // A real implementation might want to show both or the latest of the two.
+            const lastTxId = solanaData.lastTxIdSolana;
+
+            document.getElementById('total-burned').textContent = `${totalBurned.toLocaleString()} Tokens Burned (Solana + Base)`;
+            document.getElementById('last-tx-id').textContent = lastTxId;
+            console.log("Burn stats updated:", { totalBurned, lastTxId });
+
+        } catch (error) {
+            console.error("Error fetching burn stats:", error.message);
+            document.getElementById('total-burned').textContent = "Error loading stats.";
+            document.getElementById('last-tx-id').textContent = "N/A";
+        }
     }
 
     // Placeholder for rendering the fire on canvas
@@ -56,5 +101,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     fetchBurnStats();
+    // Periodically update stats every 30 seconds
+    setInterval(fetchBurnStats, 30000);
     renderFire();
 });
