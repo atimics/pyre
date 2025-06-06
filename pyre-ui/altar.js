@@ -61,43 +61,71 @@ document.addEventListener('DOMContentLoaded', () => {
     // Placeholder for rendering the fire on canvas
     function renderFire() {
         const canvas = document.getElementById('fire-canvas');
-        if (canvas.getContext) {
-            const ctx = canvas.getContext('2d');
-            // Basic fire particle simulation (very simplified)
-            let particles = [];
-            const particleCount = 100;
-
-            for (let i = 0; i < particleCount; i++) {
-                particles.push({
-                    x: Math.random() * canvas.width,
-                    y: canvas.height,
-                    size: Math.random() * 5 + 1,
-                    speedY: Math.random() * 3 + 1,
-                    color: `rgba(${Math.floor(Math.random() * 56 + 200)}, ${Math.floor(Math.random() * 50 + 50)}, 0, ${Math.random()})`
-                });
-            }
-
-            function draw() {
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                particles.forEach(p => {
-                    ctx.beginPath();
-                    ctx.fillStyle = p.color;
-                    ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-                    ctx.fill();
-
-                    p.y -= p.speedY;
-                    if (p.y < 0) {
-                        p.y = canvas.height;
-                        p.x = Math.random() * canvas.width;
-                    }
-                });
-                requestAnimationFrame(draw);
-            }
-            draw();
-            console.log("Fire animation started.");
-        } else {
+        if (!canvas || !canvas.getContext) {
             console.error("Canvas not supported or not found.");
+            return;
         }
+
+        const ctx = canvas.getContext('2d');
+        canvas.width = canvas.offsetWidth;
+        canvas.height = 200; // Keep a fixed height or make it responsive
+
+        let particles = [];
+        const particleCount = 150; // Increased particle count for a fuller fire
+        const baseHue = 10; // Orange-red base hue
+
+        function createParticle(x, y) {
+            const size = Math.random() * 7 + 3; // Slightly larger particles
+            const speedY = Math.random() * 2 + 1;
+            // Start from bottom center, spread outwards
+            const angle = Math.random() * Math.PI * 0.4 - Math.PI * 0.2; // -36 to +36 degrees from vertical
+            const speedX = Math.sin(angle) * (Math.random() * 2);
+            const life = Math.random() * 100 + 100; // Lifespan of particle
+
+            return {
+                x: x || canvas.width / 2,
+                y: y || canvas.height,
+                size: size,
+                speedX: speedX,
+                speedY: speedY,
+                color: `hsla(${baseHue + Math.random() * 20}, 100%, ${50 + Math.random() * 20}%, ${Math.random() * 0.5 + 0.5})`, // HSL for better color control (oranges, yellows)
+                life: life,
+                initialLife: life,
+            };
+        }
+
+        for (let i = 0; i < particleCount; i++) {
+            particles.push(createParticle());
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            particles.forEach((p, index) => {
+                ctx.beginPath();
+                // Fade out particles as they age
+                ctx.fillStyle = `hsla(${baseHue + Math.random() * 20}, 100%, ${50 + Math.random() * 10}%, ${ (p.life / p.initialLife) * 0.8 })`;
+                ctx.arc(p.x, p.y, p.size * (p.life / p.initialLife), 0, Math.PI * 2); // Shrink particles
+                ctx.fill();
+
+                p.y -= p.speedY;
+                p.x += p.speedX;
+                p.life--;
+
+                // Add slight wind/sway effect
+                p.speedX += (Math.random() - 0.5) * 0.2;
+                if (Math.abs(p.speedX) > 1) p.speedX = p.speedX > 0 ? 1 : -1;
+
+
+                // Reset particle when it dies or goes off screen
+                if (p.y < 0 || p.life <= 0) {
+                    particles[index] = createParticle();
+                }
+            });
+            requestAnimationFrame(draw);
+        }
+        draw();
+        console.log("Enhanced fire animation started.");
     }
 
     fetchBurnStats();
