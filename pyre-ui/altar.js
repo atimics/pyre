@@ -1,11 +1,11 @@
 // altar.js - Fetches Solana + Base RPC, renders the fire
 
 document.addEventListener('DOMContentLoaded', () => {
-    console.log("Altar is ready.");
+    console.log('Altar is ready.');
 
     // Function to fetch burn stats from simulated RPC endpoints
     async function fetchBurnStats() {
-        console.log("Fetching burn stats...");
+        console.log('Fetching burn stats...');
         const solanaRpcUrl = 'https://api.mainnet-beta.solana.com'; // Example, not actually called
         const baseRpcUrl = 'https://mainnet.base.org'; // Example, not actually called
 
@@ -13,13 +13,16 @@ document.addEventListener('DOMContentLoaded', () => {
         const fetchSolanaData = new Promise((resolve, reject) => {
             setTimeout(() => {
                 // Simulate a successful response or an error
-                if (Math.random() > 0.1) { // 90% success rate
+                if (Math.random() > 0.1) {
+                    // 90% success rate
                     resolve({
-                        totalBurnedOnSolana: Math.floor(Math.random() * 500000) + 700000,
-                        lastTxIdSolana: '0xsol' + Math.random().toString(16).slice(2, 12)
+                        totalBurnedOnSolana:
+                            Math.floor(Math.random() * 500000) + 700000,
+                        lastTxIdSolana:
+                            '0xsol' + Math.random().toString(16).slice(2, 12),
                     });
                 } else {
-                    reject(new Error("Failed to fetch data from Solana RPC"));
+                    reject(new Error('Failed to fetch data from Solana RPC'));
                 }
             }, 800);
         });
@@ -28,33 +31,41 @@ document.addEventListener('DOMContentLoaded', () => {
         const fetchBaseData = new Promise((resolve, reject) => {
             setTimeout(() => {
                 // Simulate a successful response or an error
-                if (Math.random() > 0.1) { // 90% success rate
+                if (Math.random() > 0.1) {
+                    // 90% success rate
                     resolve({
-                        totalBurnedOnBase: Math.floor(Math.random() * 300000) + 200000,
-                        lastTxIdBase: '0xbase' + Math.random().toString(16).slice(2, 12)
+                        totalBurnedOnBase:
+                            Math.floor(Math.random() * 300000) + 200000,
+                        lastTxIdBase:
+                            '0xbase' + Math.random().toString(16).slice(2, 12),
                     });
                 } else {
-                    reject(new Error("Failed to fetch data from Base RPC"));
+                    reject(new Error('Failed to fetch data from Base RPC'));
                 }
             }, 1200);
         });
 
         try {
-            const [solanaData, baseData] = await Promise.all([fetchSolanaData, fetchBaseData]);
+            const [solanaData, baseData] = await Promise.all([
+                fetchSolanaData,
+                fetchBaseData,
+            ]);
 
-            const totalBurned = solanaData.totalBurnedOnSolana + baseData.totalBurnedOnBase;
+            const totalBurned =
+                solanaData.totalBurnedOnSolana + baseData.totalBurnedOnBase;
             // For simplicity, we'll just show the Solana TX ID as the 'last' one.
             // A real implementation might want to show both or the latest of the two.
             const lastTxId = solanaData.lastTxIdSolana;
 
-            document.getElementById('total-burned').textContent = `${totalBurned.toLocaleString()} Tokens Burned (Solana + Base)`;
+            document.getElementById('total-burned').textContent =
+                `${totalBurned.toLocaleString()} Tokens Burned (Solana + Base)`;
             document.getElementById('last-tx-id').textContent = lastTxId;
-            console.log("Burn stats updated:", { totalBurned, lastTxId });
-
+            console.log('Burn stats updated:', { totalBurned, lastTxId });
         } catch (error) {
-            console.error("Error fetching burn stats:", error.message);
-            document.getElementById('total-burned').textContent = "Error loading stats.";
-            document.getElementById('last-tx-id').textContent = "N/A";
+            console.error('Error fetching burn stats:', error.message);
+            document.getElementById('total-burned').textContent =
+                'Error loading stats.';
+            document.getElementById('last-tx-id').textContent = 'N/A';
         }
     }
 
@@ -62,7 +73,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function renderFire() {
         const canvas = document.getElementById('fire-canvas');
         if (!canvas || !canvas.getContext) {
-            console.error("Canvas not supported or not found.");
+            console.error('Canvas not supported or not found.');
             return;
         }
 
@@ -104,8 +115,14 @@ document.addEventListener('DOMContentLoaded', () => {
             particles.forEach((p, index) => {
                 ctx.beginPath();
                 // Fade out particles as they age
-                ctx.fillStyle = `hsla(${baseHue + Math.random() * 20}, 100%, ${50 + Math.random() * 10}%, ${ (p.life / p.initialLife) * 0.8 })`;
-                ctx.arc(p.x, p.y, p.size * (p.life / p.initialLife), 0, Math.PI * 2); // Shrink particles
+                ctx.fillStyle = `hsla(${baseHue + Math.random() * 20}, 100%, ${50 + Math.random() * 10}%, ${(p.life / p.initialLife) * 0.8})`;
+                ctx.arc(
+                    p.x,
+                    p.y,
+                    p.size * (p.life / p.initialLife),
+                    0,
+                    Math.PI * 2
+                ); // Shrink particles
                 ctx.fill();
 
                 p.y -= p.speedY;
@@ -116,7 +133,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 p.speedX += (Math.random() - 0.5) * 0.2;
                 if (Math.abs(p.speedX) > 1) p.speedX = p.speedX > 0 ? 1 : -1;
 
-
                 // Reset particle when it dies or goes off screen
                 if (p.y < 0 || p.life <= 0) {
                     particles[index] = createParticle();
@@ -125,7 +141,7 @@ document.addEventListener('DOMContentLoaded', () => {
             requestAnimationFrame(draw);
         }
         draw();
-        console.log("Enhanced fire animation started.");
+        console.log('Enhanced fire animation started.');
     }
 
     fetchBurnStats();

@@ -1,0 +1,22 @@
+{
+    "env": {
+        "browser": true,
+        "es2021": true,
+        "jest/globals": true,
+        "node": true
+    },
+    "extends": ["airbnb-base", "plugin:jest/recommended", "prettier"],
+    "parserOptions": {
+        "ecmaVersion": "latest",
+        "sourceType": "module"
+    },
+    "plugins": ["jest"],
+    "rules": {
+        "no-console": "off", // Allows console.log for this project
+        "no-plusplus": "off", // Allows ++ operator, common in loops
+        "no-await-in-loop": "off", // Allows await in loops, sometimes necessary
+        "no-param-reassign": ["error", { "props": false }], // Allows reassigning properties of parameters
+        "import/extensions": ["error", "ignorePackages", { "js": "always" }],
+        "no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }] // Warn for unused vars, ignore if starts with _
+    }
+}

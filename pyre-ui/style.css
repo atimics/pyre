@@ -17,7 +17,7 @@ header {
     padding: 1em 0;
     text-align: center;
     width: 100%;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
 }
 
 header h1 {
@@ -33,17 +33,19 @@ main {
     padding: 20px;
     background-color: #2b2b2b;
     border-radius: 8px;
-    box-shadow: 0 0 15px rgba(0,0,0,0.7);
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.7);
 }
 
-#burn-stats, #fire-visualization {
+#burn-stats,
+#fire-visualization {
     margin-bottom: 30px;
     padding: 15px;
     background-color: #3c3c3c;
     border-radius: 6px;
 }
 
-#burn-stats h2, #fire-visualization h2 {
+#burn-stats h2,
+#fire-visualization h2 {
     color: #ff6347;
     border-bottom: 2px solid #ff6347;
     padding-bottom: 5px;

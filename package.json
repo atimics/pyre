@@ -1,0 +1,26 @@
+{
+    "name": "pyre",
+    "version": "1.0.0",
+    "description": "Rati's Funeral Pyre Yup — a one‑shot “funeral‑pyre” front‑end on Arweave is totally doable",
+    "main": "index.js",
+    "scripts": {
+        "test": "jest",
+        "lint": "eslint . --ext .js",
+        "lint:fix": "eslint . --ext .js --fix",
+        "format": "prettier --write \"**/*.{js,json,html,css,md}\"",
+        "fund-bundler": "arkb fund-bundler 0.005 --use-bundler https://node2.bundlr.network --wallet ar_key.json",
+        "deploy": "arkb deploy ./pyre-ui --use-bundler https://node2.bundlr.network --wallet ar_key.json --tag-name App-Name --tag-value FuneralPyre"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "devDependencies": {
+        "eslint": "^8.57.1",
+        "eslint-config-airbnb-base": "^15.0.0",
+        "eslint-config-prettier": "^10.1.5",
+        "eslint-plugin-import": "^2.31.0",
+        "eslint-plugin-jest": "^28.12.0",
+        "jest": "^29.7.0",
+        "prettier": "^3.5.3"
+    }
+}
