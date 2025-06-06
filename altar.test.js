@@ -18,6 +18,7 @@ global.document = {
 };
 global.requestAnimationFrame = jest.fn((cb) => cb()); // Immediately invoke callback
 global.console = { log: jest.fn(), error: jest.fn() };
+global.fetch = jest.fn();
 
 // Dynamically import altar.js after mocks are set up
 let altarModule;
@@ -58,84 +59,194 @@ describe('Altar Initialization', () => {
 });
 
 describe('fetchBurnStats', () => {
+    const mockSolanaRpcUrl = 'https://api.mainnet-beta.solana.com';
+    const mockBaseRpcUrl = 'https://mainnet.base.org';
+    let domContentLoadedCallback;
+
     beforeEach(() => {
         jest.useFakeTimers();
+        jest.clearAllMocks(); // Clear all mocks, including global.fetch
+
+        // Mock getElementById to return distinct mocks for each ID for clarity
+        global.document.getElementById = jest.fn((id) => {
+            if (id === 'total-burned') {
+                return { textContent: '' };
+            }
+            if (id === 'last-tx-id') {
+                return { textContent: '' };
+            }
+            if (id === 'fire-canvas') {
+                return {
+                    getContext: jest.fn(() => ({
+                        clearRect: jest.fn(),
+                        beginPath: jest.fn(),
+                        fill: jest.fn(),
+                        arc: jest.fn(),
+                        // ... other context methods if needed
+                    })),
+                    offsetWidth: 500,
+                    width: 0,
+                    height: 0,
+                };
+            }
+            return { textContent: '' }; // Default mock
+        });
+
         jest.isolateModules(() => {
             altarModule = require('./pyre-ui/altar.js');
         });
-        const DOMContentLoadedCallback =
-            global.document.addEventListener.mock.calls.find(
-                (call) => call[0] === 'DOMContentLoaded'
-            )[1];
-        DOMContentLoadedCallback();
+
+        // Find the DOMContentLoaded callback added by altar.js
+        const domEventCall = global.document.addEventListener.mock.calls.find(
+            (call) => call[0] === 'DOMContentLoaded'
+        );
+        if (domEventCall && typeof domEventCall[1] === 'function') {
+            domContentLoadedCallback = domEventCall[1];
+        } else {
+            // Fallback or error if altar.js didn't add the listener as expected
+            // This can happen if altar.js changes its initialization logic
+            // Forcing a simple callback for test setup if needed:
+            domContentLoadedCallback = () => {
+                // Manually call functions if direct callback isn't found/suitable
+                if (altarModule && altarModule.fetchBurnStats) altarModule.fetchBurnStats();
+                if (altarModule && altarModule.renderFire) altarModule.renderFire();
+            };
+            // console.warn("DOMContentLoaded callback not found directly, using fallback for test setup.");
+        }
+        // Initial call to simulate DOMContentLoaded
+        domContentLoadedCallback();
     });
 
     afterEach(() => {
         jest.useRealTimers();
-        jest.clearAllMocks();
     });
 
-    test('should update DOM with fetched stats on successful API simulation', async () => {
-        // Fast-forward timers to resolve promises in fetchBurnStats
-        jest.advanceTimersByTime(1200); // Longest timeout in fetchBurnStats
+    test('should update DOM with fetched stats on successful RPC calls', async () => {
+        global.fetch
+            .mockResolvedValueOnce({ // Solana
+                ok: true,
+                json: async () => ({
+                    // Assuming a simplified structure based on what altar.js might expect
+                    // This needs to align with how altar.js will parse it.
+                    // For example, if it expects a specific Solana structure:
+                    totalBurnedOnSolana: 750000,
+                    lastTxIdSolana: 'solTxSuccess123',
+                }),
+            })
+            .mockResolvedValueOnce({ // Base
+                ok: true,
+                json: async () => ({
+                    totalBurnedOnBase: 250000,
+                    lastTxIdBase: 'baseTxSuccess456',
+                }),
+            });
 
-        // Allow microtasks (awaits) to complete
-        await Promise.resolve();
-        await Promise.resolve();
+        // Re-run fetchBurnStats (DOMContentLoaded already called it once)
+        // Need to access the exported/internal function if possible, or re-trigger DOMContentLoaded
+        // For simplicity, assuming fetchBurnStats is accessible or re-triggering DOMContentLoaded works
+        // If altar.js is structured with fetchBurnStats inside DOMContentLoaded,
+        // we might need to expose it for easier testing or rely on the interval.
 
-        expect(
-            global.document.getElementById('total-burned').textContent
-        ).toMatch(/Tokens Burned \(Solana \+ Base\)$/);
-        expect(
-            global.document.getElementById('last-tx-id').textContent
-        ).toMatch(/^0x(sol|base)[a-f0-9]+$/);
-        expect(global.console.log).toHaveBeenCalledWith(
-            'Burn stats updated:',
-            expect.any(Object)
+        // Let's advance timers to trigger the first setInterval if that's easier
+        // Or, if fetchBurnStats is globally accessible from altarModule for testing:
+        // await altarModule.fetchBurnStats(); // This depends on altar.js structure
+
+        // The initial call from DOMContentLoaded should have already happened.
+        // We need to wait for the promises within that initial call to resolve.
+        await Promise.resolve(); // Allow fetch mocks to be processed
+        await Promise.resolve(); // Allow .json() promises
+        await Promise.resolve(); // Allow further promise chain in try block
+
+        expect(global.fetch).toHaveBeenCalledWith(mockSolanaRpcUrl, expect.any(Object));
+        expect(global.fetch).toHaveBeenCalledWith(mockBaseRpcUrl, expect.any(Object));
+
+        expect(global.document.getElementById('total-burned').textContent).toBe(
+            '1,000,000 Tokens Burned (Solana + Base)'
+        );
+        expect(global.document.getElementById('last-tx-id').textContent).toBe(
+            'solTxSuccess123' // As per current logic in altar.js
+        );
+        expect(global.console.log).toHaveBeenCalledWith('Burn stats updated:', {
+            totalBurned: 1000000,
+            lastTxId: 'solTxSuccess123',
+        });
+    });
+
+    test('should handle network errors from RPC calls and update DOM', async () => {
+        global.fetch.mockRejectedValueOnce(new Error('Network failed for Solana'));
+        // Second call for Base could succeed or fail, let's make it succeed for this test
+        global.fetch.mockResolvedValueOnce({
+            ok: true,
+            json: async () => ({ totalBurnedOnBase: 2000, lastTxIdBase: 'baseTxNetErrorCase' }),
+        });
+
+
+        // The initial call from DOMContentLoaded will trigger fetches.
+        // Need to wait for promises to settle.
+        await Promise.resolve(); // fetch for Solana rejects
+        await Promise.resolve(); // fetch for Base resolves
+        await Promise.resolve(); // .json() for Base
+        await Promise.resolve(); // try/catch block in fetchBurnStats
+
+        expect(global.document.getElementById('total-burned').textContent).toBe(
+            'Error loading stats.'
+        );
+        expect(global.document.getElementById('last-tx-id').textContent).toBe('N/A');
+        expect(global.console.error).toHaveBeenCalledWith(
+            'Error fetching burn stats:',
+            'Network failed for Solana' // Or whatever the first error is
         );
     });
 
-    test('should handle errors and update DOM accordingly when API simulation fails', async () => {
-        // Mock Math.random to ensure failures
-        const originalMathRandom = Math.random;
-        Math.random = () => 0.05; // Force failure (since threshold is 0.1)
+    test('should handle API errors (non-ok response) from RPC calls', async () => {
+        global.fetch
+            .mockResolvedValueOnce({ // Solana API error
+                ok: false,
+                status: 500,
+                statusText: 'Internal Server Error',
+                json: async () => ({ error: 'Solana RPC error' }),
+            })
+            .mockResolvedValueOnce({ // Base success
+                ok: true,
+                json: async () => ({ totalBurnedOnBase: 3000, lastTxIdBase: 'baseTxApiErrorCase' }),
+            });
 
-        // Re-trigger DOMContentLoaded to call fetchBurnStats with the new Math.random
-        const DOMContentLoadedCallback =
-            global.document.addEventListener.mock.calls.find(
-                (call) => call[0] === 'DOMContentLoaded'
-            )[1];
-        DOMContentLoadedCallback();
-
-        jest.advanceTimersByTime(1200);
+        await Promise.resolve();
+        await Promise.resolve();
         await Promise.resolve();
         await Promise.resolve();
 
         expect(global.document.getElementById('total-burned').textContent).toBe(
             'Error loading stats.'
         );
-        expect(global.document.getElementById('last-tx-id').textContent).toBe(
-            'N/A'
-        );
+        expect(global.document.getElementById('last-tx-id').textContent).toBe('N/A');
         expect(global.console.error).toHaveBeenCalledWith(
             'Error fetching burn stats:',
-            expect.any(String)
+            'Solana API Error: 500 Internal Server Error' // Or similar, depending on altar.js impl
         );
-
-        Math.random = originalMathRandom; // Restore Math.random
     });
 
-    test('should periodically call fetchBurnStats', () => {
-        expect(global.console.log).toHaveBeenCalledWith(
-            'Fetching burn stats...'
-        ); // Initial call
+
+    test('should periodically call fetchBurnStats', async () => {
+        global.fetch.mockResolvedValue({ // Generic success for periodic calls
+            ok: true,
+            json: async () => ({ totalBurnedOnSolana: 1, lastTxIdSolana: 'solPeriodic', totalBurnedOnBase: 1, lastTxIdBase: 'basePeriodic' }),
+        });
+
+        // Initial call happened in beforeEach via DOMContentLoadedCallback
+        expect(global.fetch).toHaveBeenCalledTimes(2); // Once for Solana, once for Base
+
         jest.advanceTimersByTime(30000); // Advance by 30 seconds
-        expect(global.console.log).toHaveBeenCalledTimes(2); // Should be called again
-        expect(global.console.log).toHaveBeenLastCalledWith(
-            'Fetching burn stats...'
-        );
+        await Promise.resolve(); await Promise.resolve(); await Promise.resolve(); // For the two fetches and their .json() and try/catch
+
+        expect(global.fetch).toHaveBeenCalledTimes(4); // Called again for Solana and Base
+        expect(global.console.log).toHaveBeenLastCalledWith('Fetching burn stats...');
+
+
         jest.advanceTimersByTime(30000); // Advance by another 30 seconds
-        expect(global.console.log).toHaveBeenCalledTimes(3);
+        await Promise.resolve(); await Promise.resolve(); await Promise.resolve();
+
+        expect(global.fetch).toHaveBeenCalledTimes(6);
     });
 });
 

@@ -11,6 +11,22 @@
             <h1>Funeral Pyre</h1>
         </header>
         <main>
+            <section id="settings">
+                <h2>Configuration</h2>
+                <div>
+                    <label for="solana-rpc-url">Solana RPC URL (Helius):</label>
+                    <input type="text" id="solana-rpc-url" value="https://mainnet.helius-rpc.com/?api-key=YOUR_HELIUS_API_KEY" placeholder="Enter Solana RPC URL">
+                </div>
+                <div>
+                    <label for="base-rpc-url">Base RPC URL:</label>
+                    <input type="text" id="base-rpc-url" value="https://mainnet.base.org" placeholder="Enter Base RPC URL">
+                </div>
+                <div>
+                    <label for="wallet-address">Wallet Address:</label>
+                    <input type="text" id="wallet-address" value="0x8e557552A41893797A5B479359995527a86B7605" placeholder="Enter Wallet Address to track">
+                </div>
+                <button id="update-settings-button">Fetch Stats</button>
+            </section>
             <section id="burn-stats">
                 <h2>Burn Totals</h2>
                 <p id="total-burned">Loading...</p>

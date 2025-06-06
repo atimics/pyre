@@ -33,7 +33,59 @@ main {
     padding: 20px;
     background-color: #2b2b2b;
     border-radius: 8px;
-    box-shadow: 0 0 15px rgba(0, 0, 0, 0.7);
+    box-shadow: 0 0 15px rgba(0,0,0,0.7);
+}
+
+#settings {
+    margin-bottom: 30px;
+    padding: 15px;
+    background-color: #3c3c3c;
+    border-radius: 6px;
+}
+
+#settings h2 {
+    color: #ff6347;
+    border-bottom: 2px solid #ff6347;
+    padding-bottom: 5px;
+    margin-top: 0;
+}
+
+#settings div {
+    margin-bottom: 10px;
+}
+
+#settings label {
+    display: block;
+    margin-bottom: 5px;
+    color: #f0f0f0;
+}
+
+#settings input[type="text"] {
+    width: calc(100% - 22px);
+    padding: 8px 10px;
+    border-radius: 4px;
+    border: 1px solid #555;
+    background-color: #1a1a1a;
+    color: #f0f0f0;
+    font-size: 0.9em;
+}
+
+#settings button {
+    background-color: #ff4500;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 1em;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+#settings button:hover {
+    background-color: #e03e00;
 }
 
 #burn-stats,
