@@ -1,7 +1,7 @@
 // altar.js - Fetches Solana + Base RPC, renders the fire
 
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('Altar is ready.');
+    console.log('🔥 Real Blockchain Altar is ready - connecting to live networks...');
 
     // Get DOM elements for settings
     const solanaRpcUrlInput = document.getElementById('solana-rpc-url');
@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const totalBurnedElem = document.getElementById('total-burned');
     const lastTxIdElem = document.getElementById('last-tx-id');
 
-    // Function to fetch burn stats from simulated RPC endpoints
+    // Function to fetch REAL burn stats from blockchain RPC endpoints
     async function fetchBurnStats() {
         // Read current values from input fields
         const solanaRpcUrl = solanaRpcUrlInput ? solanaRpcUrlInput.value : '';
@@ -25,56 +25,50 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
         
-        console.log(`Fetching burn stats for wallet: ${walletAddress}`);
-        console.log(`Using Solana RPC: ${solanaRpcUrl}`);
-        console.log(`Using Base RPC: ${baseRpcUrl}`);
+        console.log(`🔥 Fetching REAL burn stats for wallet: ${walletAddress}`);
+        console.log(`🔥 Using Solana RPC: ${solanaRpcUrl}`);
+        console.log(`🔥 Using Base RPC: ${baseRpcUrl}`);
 
-        totalBurnedElem.textContent = 'Loading...';
-        lastTxIdElem.textContent = 'Loading...';
-
-        // Simulate API call to Solana (using placeholder URLs for now)
-        const fetchSolanaData = new Promise((resolve, reject) => {
-            setTimeout(() => {
-                if (Math.random() > 0.1) { // 90% success rate
-                    resolve({
-                        totalBurnedOnSolana: Math.floor(Math.random() * 500000) + 700000,
-                        lastTxIdSolana: `0xsol${Math.random().toString(16).slice(2, 12)}`,
-                    });
-                } else {
-                    reject(new Error('Simulated failure fetching data from Solana RPC'));
-                }
-            }, 800);
-        });
-
-        // Simulate API call to Base (using placeholder URLs for now)
-        const fetchBaseData = new Promise((resolve, reject) => {
-            setTimeout(() => {
-                if (Math.random() > 0.1) { // 90% success rate
-                    resolve({
-                        totalBurnedOnBase: Math.floor(Math.random() * 300000) + 200000,
-                        lastTxIdBase: `0xbase${Math.random().toString(16).slice(2, 12)}`,
-                    });
-                } else {
-                    reject(new Error('Simulated failure fetching data from Base RPC'));
-                }
-            }, 1200);
-        });
+        totalBurnedElem.textContent = 'Loading real blockchain data...';
+        lastTxIdElem.textContent = 'Querying networks...';
 
         try {
-            // For now, we are not actually using solanaRpcUrl, baseRpcUrl, or walletAddress
-            // in the *simulated* calls. They would be used in actual fetch() calls.
-            const [solanaData, baseData] = await Promise.all([fetchSolanaData, fetchBaseData]);
+            // Initialize the blockchain API
+            const blockchainAPI = new window.BlockchainAPI();
+            
+            // Fetch real burn statistics from both networks
+            const burnData = await blockchainAPI.getBurnStatistics(
+                solanaRpcUrl, 
+                baseRpcUrl, 
+                walletAddress
+            );
 
-            const totalBurned = solanaData.totalBurnedOnSolana + baseData.totalBurnedOnBase;
-            const lastTxId = solanaData.lastTxIdSolana; // Simplification
+            // Update the UI with real data
+            const totalBurned = burnData.combined.totalBurned;
+            const lastTxId = burnData.combined.lastTransaction;
 
-            totalBurnedElem.textContent = `${totalBurned.toLocaleString()} Tokens Burned (Solana + Base)`;
+            totalBurnedElem.textContent = `🔥 ${totalBurned.toLocaleString()} Real Tokens Tracked (Solana + Base)`;
             lastTxIdElem.textContent = lastTxId;
-            console.log('Burn stats updated:', { totalBurned, lastTxId });
+            
+            console.log('🔥 REAL burn stats updated:', {
+                totalBurned,
+                lastTxId,
+                solanaData: burnData.solana,
+                baseData: burnData.base,
+                timestamp: burnData.combined.timestamp
+            });
+            
+            // Add visual feedback for successful real data fetch
+            totalBurnedElem.style.color = '#ff6347';
+            totalBurnedElem.style.fontWeight = 'bold';
+            
         } catch (error) {
-            console.error('Error fetching burn stats:', error.message);
-            totalBurnedElem.textContent = 'Error loading stats.';
-            lastTxIdElem.textContent = 'N/A';
+            console.error('🔥 Error fetching REAL burn stats:', error.message);
+            totalBurnedElem.textContent = `Real network error: ${error.message}`;
+            lastTxIdElem.textContent = 'Check RPC URLs and try again';
+            
+            // Add visual feedback for errors
+            totalBurnedElem.style.color = '#ff4444';
         }
     }
 

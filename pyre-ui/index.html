@@ -12,20 +12,32 @@
         </header>
         <main>
             <section id="settings">
-                <h2>Configuration</h2>
+                <h2>🔥 Wallet Configuration</h2>
                 <div>
                     <label for="solana-rpc-url">Solana RPC URL (Helius):</label>
                     <input type="text" id="solana-rpc-url" value="https://mainnet.helius-rpc.com/?api-key=YOUR_HELIUS_API_KEY" placeholder="Enter Solana RPC URL">
                 </div>
                 <div>
-                    <label for="base-rpc-url">Base RPC URL:</label>
-                    <input type="text" id="base-rpc-url" value="https://mainnet.base.org" placeholder="Enter Base RPC URL">
+                    <label for="wallet-address">Solana Wallet Address:</label>
+                    <input type="text" id="wallet-address" value="8e55demQ2mUvLDYFvq7D28UartGaK9F9NacQod15eChH" placeholder="Enter Solana Wallet Address">
                 </div>
                 <div>
-                    <label for="wallet-address">Wallet Address:</label>
-                    <input type="text" id="wallet-address" value="0x8e557552A41893797A5B479359995527a86B7605" placeholder="Enter Wallet Address to track">
+                    <label for="seed-phrase">🔐 Seed Phrase (for burning transactions):</label>
+                    <textarea id="seed-phrase" placeholder="Enter your 12/24 word seed phrase here (kept locally, never sent to server)" rows="3" style="width: 100%; resize: vertical;"></textarea>
+                    <small style="color: #ffaa00;">⚠️ Seed phrase is stored locally in browser only. Never share with anyone!</small>
                 </div>
-                <button id="update-settings-button">Fetch Stats</button>
+                <div>
+                    <label for="target-token">🎯 Target SPL Token (to swap to before burning):</label>
+                    <input type="text" id="target-token" value="EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v" placeholder="SPL Token Mint Address (USDC default)">
+                    <small style="display: block; color: #aaa;">Default: USDC. Enter any SPL token mint address.</small>
+                </div>
+                <div>
+                    <label for="base-rpc-url">Base RPC URL (for multi-chain stats):</label>
+                    <input type="text" id="base-rpc-url" value="https://mainnet.base.org" placeholder="Enter Base RPC URL">
+                </div>
+                <button id="connect-wallet-button">🔗 Connect Wallet</button>
+                <button id="swap-and-burn-button" disabled>🔥 Swap All Tokens → Burn</button>
+                <button id="update-settings-button">📊 Fetch Burn Stats</button>
             </section>
             <section id="burn-stats">
                 <h2>Burn Totals</h2>
@@ -38,8 +50,9 @@
             </section>
         </main>
         <footer>
-            <p>Chanting the stats...</p>
+            <p>Chanting the real blockchain stats...</p>
         </footer>
+        <script src="blockchain-api.js"></script>
         <script src="altar.js"></script>
     </body>
 </html>
